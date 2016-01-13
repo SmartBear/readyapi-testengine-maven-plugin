@@ -16,6 +16,7 @@ package com.smartbear.readyapi;
  * limitations under the License.
  */
 
+import com.google.common.collect.Lists;
 import com.google.common.io.CharStreams;
 import io.swagger.client.model.ProjectResultReport;
 import io.swagger.util.Json;
@@ -34,12 +35,19 @@ import org.apache.http.impl.client.BasicAuthCache;
 import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
+import org.apache.maven.execution.MavenSession;
+import org.apache.maven.model.Resource;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
+import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
+import org.apache.maven.project.MavenProject;
+import org.apache.maven.shared.filtering.MavenFilteringException;
+import org.apache.maven.shared.filtering.MavenResourcesExecution;
+import org.apache.maven.shared.filtering.MavenResourcesFiltering;
 
 import java.io.File;
 import java.io.FilenameFilter;
@@ -47,11 +55,21 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.nio.charset.Charset;
 
-@Mojo( name = "run", defaultPhase = LifecyclePhase.INTEGRATION_TEST )
+@Mojo( name = "run" )
 public class RunMojo
     extends AbstractMojo
 {
+    @Component
+    private MavenResourcesFiltering mavenResourcesFiltering;
+
+    @Component
+    private MavenProject mavenProject;
+
+    @Component
+    private MavenSession mavenSession;
+
     @Parameter(required = true, property = "ready-api-test-server.username")
     private String username;
 
@@ -66,6 +84,9 @@ public class RunMojo
 
     @Parameter(defaultValue="${project.basedir}/src/test/resources/recipes/data", required = true)
     private File dataDirectory;
+
+    @Parameter(defaultValue="${project.basedir}/target/test-recipes", required = true)
+    private File targetDirectory;
 
     private CloseableHttpClient httpClient;
     private HttpClientContext httpContext;
@@ -134,7 +155,7 @@ public class RunMojo
         response.close();
     }
 
-    private CloseableHttpResponse runXmlProject(File file) throws IOException {
+    private CloseableHttpResponse runXmlProject(File file) throws IOException, MavenFilteringException {
         getLog().info("Executing project " + file.getName());
 
         HttpPost httpPost = new HttpPost( server + "/v1/readyapi/executions/xml?async=false");
@@ -143,7 +164,10 @@ public class RunMojo
         return httpClient.execute(httpHost, httpPost, httpContext);
     }
 
-    private CloseableHttpResponse runJsonRecipe(File file ) throws IOException {
+    private CloseableHttpResponse runJsonRecipe(File file ) throws IOException, MavenFilteringException {
+
+        file = filterRecipe(file);
+
         getLog().info("Running recipe " + file.getName());
 
         HttpPost httpPost = new HttpPost( server + "/v1/readyapi/executions?async=false");
@@ -152,12 +176,41 @@ public class RunMojo
         return httpClient.execute(httpHost, httpPost, httpContext);
     }
 
+    private File filterRecipe(File file) throws MavenFilteringException {
+        if( !targetDirectory.exists()){
+            targetDirectory.mkdirs();
+        }
+
+        Resource fileResource = new Resource();
+        fileResource.setDirectory( recipeDirectory.getAbsolutePath() );
+        fileResource.addInclude( file.getName() );
+        fileResource.setFiltering(true);
+
+        MavenResourcesExecution resourcesExecution = new MavenResourcesExecution();
+        resourcesExecution.setOutputDirectory( targetDirectory );
+        resourcesExecution.setResources( Lists.newArrayList( fileResource ));
+        resourcesExecution.setOverwrite(true);
+        resourcesExecution.setSupportMultiLineFiltering(true);
+        resourcesExecution.setEncoding(Charset.defaultCharset().toString());
+        resourcesExecution.setMavenProject(mavenProject);
+        resourcesExecution.setMavenSession(mavenSession);
+        resourcesExecution.setUseDefaultFilterWrappers(true);
+
+        mavenResourcesFiltering.filterResources(resourcesExecution);
+
+        return new File( targetDirectory, file.getName());
+    }
+
     private static class RecipeFilenameFilter implements FilenameFilter {
         public boolean accept(File dir, String name) {
             String nm = name.toLowerCase();
             return nm.endsWith(".json") || nm.endsWith( ".xml");
         }
     }
+
+    /**
+     * Sets up HttpClient with preemptive basic authentication
+     */
 
     private void initHttpClient() throws MalformedURLException {
 
