@@ -25,21 +25,31 @@ in whatever build phase you might find relevant, for example;
 </plugin>
 ```
 
-By default the plugin will look in src/test/resources/recipes for json and xml files to execute.
+The only goal exposed by the plugin is "run" - you can invoke it as above or directly from the command-line, for example
 
-Other configuration parameters are:
-* recipeDirectory : the folder to scan for recipes/projects
+```
+mvn testserver:run 
+``
+
+
+## Configuration
+
+Configuration parameters are:
+
+* username (required) : the TestServer username to use for authentication
+* password (required) : the TestServer password to use for authentication
+* server (required) : endpoint of the TestServer (no trailing slash!)
+* recipeDirectory : the folder to scan for recipes/projects, defaults to ${project.basedir}/src/test/resources/recipes
 * targetDirectory : the folder to which filtered recipes will be copied before executing, defaults
-to target/test-recipes
-* properties : a set of properties that will be used during filtering.
+to ${project.basedir}/target/test-recipes
+* properties : an optional set of additional properties that will be used during filtering (see below)
 
-Specifying a skipApiTests system property will bypass this plugin alltogether.
+Specifying a skipApiTests system property will bypass this plugin altogether.
 
 ## Filtering
 
-As indicated, json recipes will be filtered and copied to the folder specified by 
-targetDirectory before getting executed. Any available property will be replaced, which makes it 
-easy to parameterize your tests.
+Json recipes will be filtered and copied to the folder specified by targetDirectory before getting executed. 
+Any available property will be replaced, which makes it easy to parameterize your tests.
 
 For example the following simple recipe:
 
@@ -68,8 +78,6 @@ would use a property defined as
 <apitest.host>...</apitest.host>
 ...
 ```
-
-from anywhere in your pom.
 
 ## Error reporting
 
