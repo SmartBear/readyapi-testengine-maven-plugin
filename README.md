@@ -1,6 +1,6 @@
 # ReadyAPI TestServer Maven Plugin
 
-A maven plugin that runs a set of recipes and xml projects against your APIs - configure it to run 
+A maven plugin that runs a set of json recipes and xml projects against your APIs - configure it to run 
 in whatever build phase you might find relevant, for example;
 
 ```
@@ -29,8 +29,9 @@ The only goal exposed by the plugin is "run" - you can invoke it as above or dir
 
 ```
 mvn testserver:run 
-``
+```
 
+The plugin will look for files with either json or xml extensions.
 
 ## Configuration
 
