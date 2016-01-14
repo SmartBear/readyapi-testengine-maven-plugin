@@ -78,7 +78,10 @@ would use a property defined as
 ...
 <apitest.host>...</apitest.host>
 ...
-```
+```              
+
+when assembling the URI. You can simply look in the targetDirectory folder after your tests were run to see what was 
+actually executed.
 
 ## Error reporting
 
