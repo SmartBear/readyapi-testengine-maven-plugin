@@ -85,9 +85,6 @@ public class RunMojo
     @Parameter(defaultValue = "${project.basedir}/src/test/resources/recipes", required = true)
     private File recipeDirectory;
 
-    @Parameter(defaultValue = "${project.basedir}/src/test/resources/recipes/data", required = true)
-    private File dataDirectory;
-
     @Parameter(defaultValue = "${project.basedir}/target/test-recipes", required = true)
     private File targetDirectory;
 
