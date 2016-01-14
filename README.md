@@ -23,7 +23,7 @@ in whatever build phase you might find relevant, for example;
         </execution>
     </executions>
 </plugin>
-``
+```
 
 By default the plugin will look in src/test/resources/recipes for json and xml files to execute.
 
