@@ -85,6 +85,17 @@ would use a property defined as
 Currently the plugin simple fails the build if any tests fail and dumps the Ready!API TestServer 
 response to the console.
 
+## Building the plugin
+
+Simply pull this repo and run 
+
+```
+mvn clean install
+```
+
+to install the latest version of the plugin locally. It will eventually be made available on maven central also.
+
+
 ## Next steps?
 
 Obviously huge list of things to improve:
