@@ -98,6 +98,10 @@ public class RunMojo
     public void execute()
             throws MojoExecutionException {
         try {
+            if( mavenSession.getSystemProperties().getProperty("skipApiTests") != null ){
+                return;
+            }
+
             File f = recipeDirectory;
 
             if (!f.exists()) {
