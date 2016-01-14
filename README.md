@@ -1,7 +1,7 @@
 # ReadyAPI TestServer Maven Plugin
 
-A maven plugin that runs a set of json recipes and xml projects against your APIs - configure it to run 
-in whatever build phase you might find relevant, for example;
+A maven plugin that runs a set of Ready! API TestServer Json recipes and Ready! API projects - 
+configure it to run in whatever build phase you might find relevant, for example;
 
 ```
 <plugin>
@@ -11,7 +11,7 @@ in whatever build phase you might find relevant, for example;
     <configuration>
         <username>defaultUser</username>
         <password>defaultPassword</password>
-        <server>http://ready-api-test-server.swaggerhub31339dac46cf41e3.svc.tutum.io:8080</server>
+        <server>...Ready!API TestServer endpoint...</server>
     </configuration>
     <executions>
         <execution>
