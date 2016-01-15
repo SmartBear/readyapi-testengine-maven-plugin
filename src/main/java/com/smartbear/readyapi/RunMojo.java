@@ -47,14 +47,19 @@ import org.apache.maven.project.MavenProject;
 import org.apache.maven.shared.filtering.MavenFilteringException;
 import org.apache.maven.shared.filtering.MavenResourcesExecution;
 import org.apache.maven.shared.filtering.MavenResourcesFiltering;
+import org.apache.maven.shared.model.fileset.FileSet;
+import org.apache.maven.shared.model.fileset.util.FileSetManager;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.charset.Charset;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
@@ -72,6 +77,9 @@ public class RunMojo
 
     @Parameter
     private Map properties;
+
+    @Parameter
+    private boolean disableFiltering;
 
     @Parameter(required = true, property = "ready-api-test-server.username")
     private String username;
@@ -99,29 +107,26 @@ public class RunMojo
                 return;
             }
 
-            File f = recipeDirectory;
+            List<String> files = getIncludedFiles();
 
-            if (!f.exists()) {
-                getLog().warn("Missing recipe directory [" + f.getAbsolutePath() + "]");
+            if (files.isEmpty() ) {
+                getLog().warn("Missing matching files in project");
                 return;
             }
 
-            File[] files = f.listFiles(new RecipeFilenameFilter());
-            if (files.length == 0) {
-                getLog().warn("Missing recipes in directory [" + f.getAbsolutePath() + "]");
-                return;
-            }
-
+            readRecipeProperties();
             initHttpClient();
 
-            for (File file : files) {
-                String fileName = file.getName().toLowerCase();
+            for (String file : files) {
+                String fileName = file.toLowerCase();
                 CloseableHttpResponse response;
 
+                File f = new File(recipeDirectory,file);
+
                 if (fileName.endsWith(".json")) {
-                    response = runJsonRecipe(file);
+                    response = runJsonRecipe(f);
                 } else if (fileName.endsWith(".xml")) {
-                    response = runXmlProject(file);
+                    response = runXmlProject(f);
                 } else {
                     getLog().warn("Unexpected filename: " + fileName);
                     continue;
@@ -132,6 +137,34 @@ public class RunMojo
         } catch (Exception e) {
             throw new MojoExecutionException("Error running recipe", e);
         }
+    }
+
+    private void readRecipeProperties() throws IOException {
+        File recipeProperties = new File(recipeDirectory, "recipe.properties");
+        if( recipeProperties.exists()){
+            Properties props = new Properties();
+            props.load( new FileInputStream( recipeProperties ));
+            getLog().info( "Read " + props.size() + " properties from recipe.properties");
+
+            // override with properties in config section
+            if( properties != null ){
+                props.putAll( properties );
+            }
+
+            properties = props;
+        }
+    }
+
+    private List<String> getIncludedFiles() {
+
+        FileSetManager fileSetManager = new FileSetManager();
+
+        FileSet fileSet = new FileSet();
+        fileSet.setDirectory(recipeDirectory.getAbsolutePath());
+        fileSet.addInclude("**/*.json");
+        fileSet.addInclude("**/*.xml");
+
+        return Arrays.asList(fileSetManager.getIncludedFiles( fileSet ));
     }
 
     private void handleResponse(CloseableHttpResponse response) throws IOException, MojoFailureException {
@@ -162,7 +195,9 @@ public class RunMojo
 
     private CloseableHttpResponse runJsonRecipe(File file) throws IOException, MavenFilteringException {
 
-        file = filterRecipe(file);
+        if( !disableFiltering) {
+            file = filterRecipe(file);
+        }
 
         getLog().debug("Running recipe " + file.getName());
 
@@ -179,7 +214,10 @@ public class RunMojo
 
         Resource fileResource = new Resource();
         fileResource.setDirectory(recipeDirectory.getAbsolutePath());
-        fileResource.addInclude(file.getName());
+
+        String filename = file.getAbsolutePath().substring(recipeDirectory.getAbsolutePath().length());
+
+        fileResource.addInclude(filename);
         fileResource.setFiltering(true);
 
         MavenResourcesExecution resourcesExecution = new MavenResourcesExecution();
@@ -202,7 +240,7 @@ public class RunMojo
 
         mavenResourcesFiltering.filterResources(resourcesExecution);
 
-        return new File(targetDirectory, file.getName());
+        return new File(targetDirectory, filename);
     }
 
     private static class RecipeFilenameFilter implements FilenameFilter {

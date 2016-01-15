@@ -40,12 +40,17 @@ Configuration parameters are:
 * username (required) : the TestServer username to use for authentication
 * password (required) : the TestServer password to use for authentication
 * server (required) : endpoint of the TestServer (no trailing slash!)
-* recipeDirectory : the folder to scan for recipes/projects, defaults to ${project.basedir}/src/test/resources/recipes
+* recipeDirectory : the folder to scan recursively for recipes/projects, defaults to ${project.basedir}/src/test/resources/recipes
 * targetDirectory : the folder to which filtered recipes will be copied before executing, defaults
 to ${project.basedir}/target/test-recipes
 * properties : an optional set of additional properties that will be used during filtering (see below)
+* disableFiltering : disables filtering of recipes - if set to true the recipes will not be copied and filtere
+to the target directory, instead they will run directly from the source directory.
 
 Specifying a skipApiTests system property will bypass this plugin altogether.
+
+The plugin will also look for standard properties file named recipe.properties in the recipeDirectory folder and
+load any properties in this file before applying the properties specified in the configuration.
 
 ## Filtering
 
