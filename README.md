@@ -7,7 +7,7 @@ configure it to run in whatever build phase you might find relevant, for example
 <plugin>
     <groupId>com.smartbear.readyapi</groupId>
     <artifactId>testserver-maven-plugin</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <version>1.0.0</version>
     <configuration>
         <username>defaultUser</username>
         <password>defaultPassword</password>
@@ -110,5 +110,5 @@ to install the latest version of the plugin locally. It will eventually be made 
 
 Obviously huge list of things to improve:
 - support datadriven tests
-- nice reports that integrate with surefire
+- improved surefire reports
 - etc..
