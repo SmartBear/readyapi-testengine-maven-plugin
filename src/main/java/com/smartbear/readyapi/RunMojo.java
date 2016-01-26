@@ -319,13 +319,6 @@ public class RunMojo
         return new File(targetDirectory, filename);
     }
 
-    private static class RecipeFilenameFilter implements FilenameFilter {
-        public boolean accept(File dir, String name) {
-            String nm = name.toLowerCase();
-            return nm.endsWith(".json") || nm.endsWith(".xml");
-        }
-    }
-
     /**
      * Sets up HttpClient with preemptive basic authentication
      */

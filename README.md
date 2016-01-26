@@ -46,6 +46,8 @@ to ${project.basedir}/target/test-recipes
 * properties : an optional set of additional properties that will be used during filtering (see below)
 * disableFiltering : disables filtering of recipes - if set to true the recipes will not be copied and filtere
 to the target directory, instead they will run directly from the source directory.
+* reportTarget : the folder to which a junit-report.xml file will be generated (as can be processed by 
+the surefire plugin), defaults to ${basedir}/target/surefire-reports
 
 Specifying a skipApiTests system property will bypass this plugin altogether.
 
@@ -91,7 +93,7 @@ actually executed.
 ## Error reporting
 
 Currently the plugin simple fails the build if any tests fail and dumps the Ready!API TestServer 
-response to the console.
+response to the console. A surefire xml file is generated for inclusion in generated reports.
 
 ## Building the plugin
 
