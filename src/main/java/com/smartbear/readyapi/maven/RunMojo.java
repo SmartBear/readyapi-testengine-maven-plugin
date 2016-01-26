@@ -1,4 +1,4 @@
-package com.smartbear.readyapi;
+package com.smartbear.readyapi.maven;
 
 /*
  * Copyright 2004-2015 SmartBear Software
@@ -18,10 +18,10 @@ package com.smartbear.readyapi;
 
 import com.google.common.collect.Lists;
 import com.google.common.io.CharStreams;
-import io.swagger.client.model.ProjectResultReport;
-import io.swagger.client.model.TestCaseResultReport;
-import io.swagger.client.model.TestStepResultReport;
-import io.swagger.client.model.TestSuiteResultReport;
+import com.smartbear.readyapi.client.model.ProjectResultReport;
+import com.smartbear.readyapi.client.model.TestCaseResultReport;
+import com.smartbear.readyapi.client.model.TestStepResultReport;
+import com.smartbear.readyapi.client.model.TestSuiteResultReport;
 import io.swagger.util.Json;
 import org.apache.http.HttpHost;
 import org.apache.http.auth.AuthScope;
@@ -55,7 +55,6 @@ import org.apache.maven.shared.model.fileset.util.FileSetManager;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.MalformedURLException;

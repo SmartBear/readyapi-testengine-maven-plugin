@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.smartbear.readyapi;
+package com.smartbear.readyapi.maven;
 
 import com.smartbear.readyapi.junit.ErrorDocument;
 import com.smartbear.readyapi.junit.FailureDocument;
