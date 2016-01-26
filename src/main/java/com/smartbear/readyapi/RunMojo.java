@@ -1,7 +1,7 @@
 package com.smartbear.readyapi;
 
 /*
- * Copyright 2001-2005 The Apache Software Foundation.
+ * Copyright 2004-2015 SmartBear Software
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,9 @@ package com.smartbear.readyapi;
 import com.google.common.collect.Lists;
 import com.google.common.io.CharStreams;
 import io.swagger.client.model.ProjectResultReport;
+import io.swagger.client.model.TestCaseResultReport;
+import io.swagger.client.model.TestStepResultReport;
+import io.swagger.client.model.TestSuiteResultReport;
 import io.swagger.util.Json;
 import org.apache.http.HttpHost;
 import org.apache.http.auth.AuthScope;
@@ -58,7 +61,9 @@ import java.io.InputStreamReader;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.charset.Charset;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -67,7 +72,7 @@ import java.util.Properties;
 public class RunMojo
         extends AbstractMojo {
     @Component
-    private MavenResourcesFiltering mavenResourcesFiltering;
+    private MavenResourcesFiltering resourcesFiltering;
 
     @Component
     private MavenProject mavenProject;
@@ -80,6 +85,9 @@ public class RunMojo
 
     @Parameter
     private boolean disableFiltering;
+
+    @Parameter(defaultValue = "true")
+    private boolean failOnFailures;
 
     @Parameter(required = true, property = "ready-api-test-server.username")
     private String username;
@@ -96,12 +104,15 @@ public class RunMojo
     @Parameter(defaultValue = "${project.basedir}/target/test-recipes", required = true)
     private File targetDirectory;
 
+    @Parameter(defaultValue = "${basedir}/target/surefire-reports")
+    private File reportTarget;
+
     private CloseableHttpClient httpClient;
     private HttpClientContext httpContext;
     private HttpHost httpHost;
 
     public void execute()
-            throws MojoExecutionException {
+            throws MojoExecutionException, MojoFailureException {
         try {
             if( mavenSession.getSystemProperties().getProperty("skipApiTests") != null ){
                 return;
@@ -117,6 +128,12 @@ public class RunMojo
             readRecipeProperties();
             initHttpClient();
 
+            JUnitReport report = new JUnitReport();
+
+            int recipeCount = 0;
+            int projectCount = 0;
+            int failCount = 0;
+
             for (String file : files) {
                 String fileName = file.toLowerCase();
                 CloseableHttpResponse response;
@@ -124,17 +141,48 @@ public class RunMojo
                 File f = new File(recipeDirectory,file);
 
                 if (fileName.endsWith(".json")) {
+                    recipeCount++;
                     response = runJsonRecipe(f);
                 } else if (fileName.endsWith(".xml")) {
+                    projectCount++;
                     response = runXmlProject(f);
                 } else {
                     getLog().warn("Unexpected filename: " + fileName);
                     continue;
                 }
 
-                handleResponse(response);
+                try{
+                    handleResponse(response, report, file);
+                }
+                catch (MojoFailureException exception)
+                {
+                    failCount++;
+                }
             }
-        } catch (Exception e) {
+
+            getLog().info("Ready! API TestRunner Maven Plugin");
+            getLog().info("--------------------------------------");
+            getLog().info("Recipes run: " + recipeCount );
+            getLog().info("Projects run: " + projectCount );
+            getLog().info("Failures: " + failCount );
+
+            report.setTestSuiteName( mavenProject.getName() );
+            report.setNoofFailuresInTestSuite( failCount );
+
+            if( !reportTarget.exists()){
+                reportTarget.mkdirs();
+            }
+
+            report.save( new File( reportTarget, "recipe-report.xml"));
+
+            if( failCount > 0 && failOnFailures ){
+               throw new MojoFailureException( failCount + " failures during test execution" );
+            }
+
+        } catch( MojoFailureException e ){
+            throw e;
+        }
+        catch (Exception e) {
             throw new MojoExecutionException("Error running recipe", e);
         }
     }
@@ -144,7 +192,7 @@ public class RunMojo
         if( recipeProperties.exists()){
             Properties props = new Properties();
             props.load( new FileInputStream( recipeProperties ));
-            getLog().info( "Read " + props.size() + " properties from recipe.properties");
+            getLog().debug( "Read " + props.size() + " properties from recipe.properties");
 
             // override with properties in config section
             if( properties != null ){
@@ -167,25 +215,53 @@ public class RunMojo
         return Arrays.asList(fileSetManager.getIncludedFiles( fileSet ));
     }
 
-    private void handleResponse(CloseableHttpResponse response) throws IOException, MojoFailureException {
+    private void handleResponse(CloseableHttpResponse response, JUnitReport report, String name) throws IOException, MojoFailureException {
 
-        getLog().info("Response status: " + response.getStatusLine());
+        getLog().debug("Response status: " + response.getStatusLine());
         InputStreamReader inputStreamReader = new InputStreamReader(response.getEntity().getContent());
         String responseBody = CharStreams.toString(inputStreamReader);
+        response.close();
+
+        getLog().debug("Response body:" + responseBody);
 
         ProjectResultReport result = Json.mapper().reader(ProjectResultReport.class).readValue(responseBody);
         if (result.getStatus() == ProjectResultReport.StatusEnum.FAILED) {
-            getLog().error("Response body:" + responseBody);
+
+            String message = logErrorsToConsole(result);
+            report.addTestCaseWithFailure( name, result.getTimeTaken(),
+                    message, "<missing stacktrace>", new HashMap<String, String>(properties));
+
             throw new MojoFailureException("Recipe Failed");
-        } else {
-            getLog().debug("Response body:" + responseBody);
+        }
+        else {
+            report.addTestCase( name, result.getTimeTaken(), new HashMap<String, String>(properties));
+        }
+    }
+
+    private String logErrorsToConsole(ProjectResultReport result) {
+
+        List<String> messages = new ArrayList<String>();
+
+        for( TestSuiteResultReport testSuiteResultReport : result.getTestSuiteResultReports()){
+            for(TestCaseResultReport testCaseResultReport : testSuiteResultReport.getTestCaseResultReports()){
+                for(TestStepResultReport stepResultReport : testCaseResultReport.getTestStepResultReports()){
+                    if( stepResultReport.getAssertionStatus() == TestStepResultReport.AssertionStatusEnum.FAILED){
+                        getLog().error("Failed " + testSuiteResultReport.getTestSuiteName() + " / " +
+                                testCaseResultReport.getTestCaseName() + " / " + stepResultReport.getTestStepName());
+                        for( String message : stepResultReport.getMessages()){
+                            messages.add( message );
+                            getLog().error( "- " + message);
+                        }
+                    }
+                }
+            }
         }
 
-        response.close();
+        return Arrays.toString( messages.toArray());
     }
 
     private CloseableHttpResponse runXmlProject(File file) throws IOException, MavenFilteringException {
-        getLog().debug("Executing project " + file.getName());
+        getLog().info("Executing project " + file.getName());
 
         HttpPost httpPost = new HttpPost(server + "/v1/readyapi/executions/xml?async=false");
         httpPost.setEntity(new FileEntity(file, ContentType.APPLICATION_XML));
@@ -199,7 +275,7 @@ public class RunMojo
             file = filterRecipe(file);
         }
 
-        getLog().debug("Running recipe " + file.getName());
+        getLog().info("Running recipe " + file.getName());
 
         HttpPost httpPost = new HttpPost(server + "/v1/readyapi/executions?async=false");
         httpPost.setEntity(new FileEntity(file, ContentType.APPLICATION_JSON));
@@ -238,7 +314,7 @@ public class RunMojo
         resourcesExecution.setMavenSession(mavenSession);
         resourcesExecution.setUseDefaultFilterWrappers(true);
 
-        mavenResourcesFiltering.filterResources(resourcesExecution);
+        resourcesFiltering.filterResources(resourcesExecution);
 
         return new File(targetDirectory, filename);
     }
