@@ -197,7 +197,7 @@ public class RunMojo
         tempZip.deleteOnExit();
         ZipUtil.pack(file, tempZip );
 
-        HttpPost httpPost = new HttpPost(server + "/v1/readyapi/executions/xml?async=false");
+        HttpPost httpPost = new HttpPost(server + "/v1/readyapi/executions/composite?async=false");
         httpPost.setEntity(new FileEntity(tempZip, ContentType.create("application/zip")));
 
         return httpClient.execute(httpHost, httpPost, httpContext);
