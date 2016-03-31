@@ -52,6 +52,7 @@ import org.apache.maven.shared.filtering.MavenResourcesExecution;
 import org.apache.maven.shared.filtering.MavenResourcesFiltering;
 import org.apache.maven.shared.model.fileset.FileSet;
 import org.apache.maven.shared.model.fileset.util.FileSetManager;
+import org.zeroturnaround.zip.ZipUtil;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -139,13 +140,16 @@ public class RunMojo
 
                 File f = new File(recipeDirectory,file);
 
-                if (fileName.endsWith(".json")) {
+                if( f.isDirectory()){
+                    projectCount++;
+                    response = runCompositeProject( f );
+                } else if (fileName.endsWith(".json")) {
                     recipeCount++;
                     response = runJsonRecipe(f);
                 } else if (fileName.endsWith(".xml")) {
                     projectCount++;
                     response = runXmlProject(f);
-                } else {
+                } else  {
                     getLog().warn("Unexpected filename: " + fileName);
                     continue;
                 }
@@ -184,6 +188,19 @@ public class RunMojo
         catch (Exception e) {
             throw new MojoExecutionException("Error running recipe", e);
         }
+    }
+
+    private CloseableHttpResponse runCompositeProject(File file) throws IOException {
+        getLog().info("Executing composite project " + file.getName());
+
+        File tempZip = File.createTempFile( file.getName(), ".zip");
+        tempZip.deleteOnExit();
+        ZipUtil.pack(file, tempZip );
+
+        HttpPost httpPost = new HttpPost(server + "/v1/readyapi/executions/xml?async=false");
+        httpPost.setEntity(new FileEntity(tempZip, ContentType.create("application/zip")));
+
+        return httpClient.execute(httpHost, httpPost, httpContext);
     }
 
     private void readRecipeProperties() throws IOException {
