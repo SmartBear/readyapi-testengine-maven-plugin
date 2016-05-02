@@ -7,7 +7,7 @@ configure it to run in whatever build phase you might find relevant, for example
 <plugin>
     <groupId>com.smartbear.readyapi</groupId>
     <artifactId>testserver-maven-plugin</artifactId>
-    <version>1.0.0</version>
+    <version>1.0.1</version>
     <configuration>
         <username>defaultUser</username>
         <password>defaultPassword</password>
@@ -48,6 +48,12 @@ to ${project.basedir}/target/test-recipes
 to the target directory, instead they will run directly from the source directory.
 * reportTarget : the folder to which a junit-report.xml file will be generated (as can be processed by 
 the surefire plugin), defaults to ${basedir}/target/surefire-reports
+* environment : if you're submitting existing SoapUI/Ready!API project files this allows you to select which environment 
+to target
+* async : toggle if tests should be executed asynchronously - default is false which will wait for tests to finish 
+ to be able to create test-reports. Setting this to true will disable reporting functionality, but allow you 
+to specify an optional callback that will be called by the TestServer with test results when they are finished.
+* callback : an optional url to call with finished test results if async is set to true 
 
 Specifying a skipApiTests system property will bypass this plugin altogether.
 
