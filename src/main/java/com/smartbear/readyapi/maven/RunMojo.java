@@ -107,6 +107,9 @@ public class RunMojo
     @Parameter(required = true, property = "ready-api-test-server.endpoint")
     private String server;
 
+    @Parameter
+    private String hostAndPort;
+
     @Parameter(defaultValue = "${project.basedir}/src/test/resources/recipes", required = true)
     private File recipeDirectory;
 
@@ -275,16 +278,20 @@ public class RunMojo
     private CloseableHttpResponse runXmlProject(File file) throws IOException, MavenFilteringException {
         getLog().info("Executing project " + file.getName());
 
-        HttpPost httpPost = new HttpPost(buildExecuteUri("/executions/xml"));
+        HttpPost httpPost = new HttpPost(buildExecuteUri("/testjobs"));
         httpPost.setEntity(new FileEntity(file, ContentType.APPLICATION_XML));
 
         return httpClient.execute(httpHost, httpPost, httpContext);
     }
 
     private String buildExecuteUri(String path) {
-        String uri = server + "/v1/readyapi" + path + "?async=" + async;
+        String uri = server + "/api/v1" + path + "?async=" + async;
         if( environment != null ){
             uri += "&environment=" + URLEncoder.encode( environment );
+        }
+
+        if (hostAndPort != null) {
+            uri += "&hostAndPort=" + URLEncoder.encode(hostAndPort);
         }
 
         if( callback != null ){
