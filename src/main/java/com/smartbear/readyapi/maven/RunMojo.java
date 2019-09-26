@@ -107,6 +107,9 @@ public class RunMojo
     @Parameter(required = true, property = "ready-api-test-server.endpoint")
     private String server;
 
+    @Parameter
+    private String hostAndPort;
+
     @Parameter(defaultValue = "${project.basedir}/src/test/resources/recipes", required = true)
     private File recipeDirectory;
 
@@ -285,6 +288,10 @@ public class RunMojo
         String uri = server + "/api/v1" + path + "?async=" + async;
         if( environment != null ){
             uri += "&environment=" + URLEncoder.encode( environment );
+        }
+
+        if (hostAndPort != null) {
+            uri += "&hostAndPort=" + URLEncoder.encode(hostAndPort);
         }
 
         if( callback != null ){
