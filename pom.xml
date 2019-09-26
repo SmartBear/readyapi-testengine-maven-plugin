@@ -2,14 +2,14 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.smartbear.readyapi</groupId>
-    <artifactId>testserver-maven-plugin</artifactId>
+    <artifactId>testengine-maven-plugin</artifactId>
 
     <packaging>maven-plugin</packaging>
     <version>1.0.1-SNAPSHOT</version>
-    <name>Ready! API TestServer Maven Plugin</name>
+    <name>ReadyAPI TestEngine Maven Plugin</name>
 
-    <description>Maven plugin for executing test recipes against Ready!API TestServer</description>
-    <url>https://github.com/olensmar/readyapi-testserver-maven-plugin</url>
+    <description>Maven plugin for executing test projects with ReadyAPI TestEngine</description>
+    <url>https://github.com/readyapi/readyapi-testengine-maven-plugin</url>
 
     <developers>
         <developer>
@@ -19,15 +19,15 @@
     </developers>
 
     <scm>
-        <url>https://github.com/olensmar/readyapi-testserver-maven-plugin</url>
-        <connection>scm:git:ssh://git@github.com/olensmar/readyapi-testserver-maven-plugin.git</connection>
-        <developerConnection>scm:git:ssh://git@github.com/olensmar/readyapi-testserver-maven-plugin.git
+        <url>https://github.com/readyapi/readyapi-testengine-maven-plugin</url>
+        <connection>scm:git:ssh://git@github.com/readyapi/readyapi-testengine-maven-plugin.git</connection>
+        <developerConnection>scm:git:ssh://git@github.com/readyapi/readyapi-testengine-maven-plugin.git
         </developerConnection>
     </scm>
 
     <issueManagement>
         <system>github</system>
-        <url>https://github.com/olensmar/readyapi-testserver-maven-plugin/issues</url>
+        <url>https://github.com/readyapi/readyapi-testengine-maven-plugin/issues</url>
     </issueManagement>
 
     <licenses>
@@ -104,8 +104,17 @@
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.8.1</version>
+                <configuration>
+                    <target>6</target>
+                </configuration>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-plugin-plugin</artifactId>
-                <version>3.4</version>
+                <version>3.6.0</version>
                 <executions>
                     <execution>
                         <id>default-descriptor</id>
@@ -128,7 +137,7 @@
                 </executions>
                 <inherited>true</inherited>
                 <configuration>
-                    <javaSource>1.5</javaSource>
+                    <javaSource>6</javaSource>
                     <verbose>false</verbose>
                     <schemaDirectory>src/main/resources</schemaDirectory>
                 </configuration>
