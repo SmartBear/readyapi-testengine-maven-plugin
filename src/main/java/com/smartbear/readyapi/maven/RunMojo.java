@@ -108,10 +108,10 @@ public class RunMojo
     @Parameter
     private String hostAndPort;
 
-    @Parameter(defaultValue = "${project.basedir}/src/test/resources/recipes", required = true)
-    private File recipeDirectory;
+    @Parameter(defaultValue = "${project.basedir}/src/test/resources/test-projects", required = true)
+    private File projectsDirectory;
 
-    @Parameter(defaultValue = "${project.basedir}/target/test-recipes", required = true)
+    @Parameter(defaultValue = "${project.basedir}/target/test-projects", required = true)
     private File targetDirectory;
 
     @Parameter(defaultValue = "${basedir}/target/surefire-reports")
@@ -134,7 +134,7 @@ public class RunMojo
                 return;
             }
 
-            readRecipeProperties();
+            readProperties();
             initHttpClient();
 
             if( properties == null ){
@@ -151,7 +151,7 @@ public class RunMojo
                 String fileName = file.toLowerCase();
                 CloseableHttpResponse response;
 
-                File f = new File(recipeDirectory,file);
+                File f = new File(projectsDirectory,file);
 
                 if (fileName.endsWith(".json")) {
                     recipeCount++;
@@ -187,7 +187,7 @@ public class RunMojo
                     reportTarget.mkdirs();
                 }
 
-                report.save(new File(reportTarget, "recipe-report.xml"));
+                report.save(new File(reportTarget, "testengine-report.xml"));
 
                 if (failCount > 0 && failOnFailures) {
                     throw new MojoFailureException(failCount + " failures during test execution");
@@ -198,16 +198,16 @@ public class RunMojo
             throw e;
         }
         catch (Exception e) {
-            throw new MojoExecutionException("Error running recipe", e);
+            throw new MojoExecutionException("Error running tests", e);
         }
     }
 
-    private void readRecipeProperties() throws IOException {
-        File recipeProperties = new File(recipeDirectory, "recipe.properties");
-        if( recipeProperties.exists()){
+    private void readProperties() throws IOException {
+        File testengineProperties = new File(projectsDirectory, "testengine.properties");
+        if( testengineProperties.exists()){
             Properties props = new Properties();
-            props.load( new FileInputStream( recipeProperties ));
-            getLog().debug( "Read " + props.size() + " properties from recipe.properties");
+            props.load( new FileInputStream( testengineProperties ));
+            getLog().debug( "Read " + props.size() + " properties from testengine.properties");
 
             // override with properties in config section
             if( properties != null ){
@@ -223,7 +223,7 @@ public class RunMojo
         FileSetManager fileSetManager = new FileSetManager();
 
         FileSet fileSet = new FileSet();
-        fileSet.setDirectory(recipeDirectory.getAbsolutePath());
+        fileSet.setDirectory(projectsDirectory.getAbsolutePath());
         fileSet.addInclude("**/*.json");
         fileSet.addInclude("**/*.xml");
 
@@ -248,7 +248,7 @@ public class RunMojo
                 report.addTestCaseWithFailure(name, result.getTotalTime(),
                     message, "<missing stacktrace>", new HashMap<String, String>(properties));
 
-                throw new MojoFailureException("Recipe Failed");
+                throw new MojoFailureException("Test Execution Failed");
             } else {
                 report.addTestCase(name, result.getTotalTime(), new HashMap<String, String>(properties));
             }
@@ -322,9 +322,9 @@ public class RunMojo
         }
 
         Resource fileResource = new Resource();
-        fileResource.setDirectory(recipeDirectory.getAbsolutePath());
+        fileResource.setDirectory(projectsDirectory.getAbsolutePath());
 
-        String filename = file.getAbsolutePath().substring(recipeDirectory.getAbsolutePath().length());
+        String filename = file.getAbsolutePath().substring(projectsDirectory.getAbsolutePath().length());
 
         fileResource.addInclude(filename);
         fileResource.setFiltering(true);
