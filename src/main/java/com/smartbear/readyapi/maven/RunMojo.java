@@ -16,13 +16,10 @@ package com.smartbear.readyapi.maven;
  * limitations under the License.
  */
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Lists;
 import com.google.common.io.CharStreams;
-import com.smartbear.readyapi.client.model.ProjectResultReport;
-import com.smartbear.readyapi.client.model.TestCaseResultReport;
-import com.smartbear.readyapi.client.model.TestStepResultReport;
-import com.smartbear.readyapi.client.model.TestSuiteResultReport;
-import io.swagger.util.Json;
+import com.smartbear.readyapi.portal.model.*;
 import org.apache.http.HttpHost;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
@@ -239,28 +236,29 @@ public class RunMojo
         getLog().debug("Response body:" + responseBody);
 
         if( report != null ) {
-            ProjectResultReport result = Json.mapper().reader(ProjectResultReport.class).readValue(responseBody);
-            if (result.getStatus() == ProjectResultReport.StatusEnum.FAILED) {
+            ObjectMapper mapper = new ObjectMapper();
+            TestJobReport result = mapper.readerFor(TestJobReport.class).readValue(responseBody);
+            if (result.getStatus() == TestJobReport.StatusEnum.FAILED) {
 
                 String message = logErrorsToConsole(result);
-                report.addTestCaseWithFailure(name, result.getTimeTaken(),
+                report.addTestCaseWithFailure(name, result.getTotalTime(),
                     message, "<missing stacktrace>", new HashMap<String, String>(properties));
 
                 throw new MojoFailureException("Recipe Failed");
             } else {
-                report.addTestCase(name, result.getTimeTaken(), new HashMap<String, String>(properties));
+                report.addTestCase(name, result.getTotalTime(), new HashMap<String, String>(properties));
             }
         }
     }
 
-    private String logErrorsToConsole(ProjectResultReport result) {
+    private String logErrorsToConsole(TestJobReport result) {
 
         List<String> messages = new ArrayList<String>();
 
         for( TestSuiteResultReport testSuiteResultReport : result.getTestSuiteResultReports()){
             for(TestCaseResultReport testCaseResultReport : testSuiteResultReport.getTestCaseResultReports()){
                 for(TestStepResultReport stepResultReport : testCaseResultReport.getTestStepResultReports()){
-                    if( stepResultReport.getAssertionStatus() == TestStepResultReport.AssertionStatusEnum.FAILED){
+                    if( stepResultReport.getAssertionStatus() == TestStepResultReport.AssertionStatusEnum.FAIL){
                         getLog().error("Failed " + testSuiteResultReport.getTestSuiteName() + " / " +
                                 testCaseResultReport.getTestCaseName() + " / " + stepResultReport.getTestStepName());
                         for( String message : stepResultReport.getMessages()){
