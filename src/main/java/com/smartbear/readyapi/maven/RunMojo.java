@@ -98,13 +98,13 @@ public class RunMojo
     @Parameter(defaultValue = "true")
     private boolean failOnFailures;
 
-    @Parameter(required = true, property = "ready-api-test-server.username")
+    @Parameter(required = true, property = "readyapi-testengine.username")
     private String username;
 
-    @Parameter(required = true, property = "ready-api-test-server.password")
+    @Parameter(required = true, property = "readyapi-testengine.password")
     private String password;
 
-    @Parameter(required = true, property = "ready-api-test-server.endpoint")
+    @Parameter(required = true, property = "readyapi-testengine.endpoint")
     private String server;
 
     @Parameter
@@ -172,7 +172,7 @@ public class RunMojo
                 }
             }
 
-            getLog().info("Ready! API TestServer Maven Plugin");
+            getLog().info("ReadyAPI TestEngine Maven Plugin");
             getLog().info("--------------------------------------");
             getLog().info("Recipes run: " + recipeCount );
             getLog().info("Projects run: " + projectCount );
@@ -308,7 +308,7 @@ public class RunMojo
 
         getLog().info("Running recipe " + file.getName());
 
-        HttpPost httpPost = new HttpPost(buildExecuteUri("/executions"));
+        HttpPost httpPost = new HttpPost(buildExecuteUri("/testjobs/recipe"));
         httpPost.setEntity(new FileEntity(file, ContentType.APPLICATION_JSON));
 
         return httpClient.execute(httpHost, httpPost, httpContext);
