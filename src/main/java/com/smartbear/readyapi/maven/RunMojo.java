@@ -18,6 +18,7 @@ package com.smartbear.readyapi.maven;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import com.google.common.io.CharStreams;
 import com.smartbear.readyapi.portal.model.*;
 import org.apache.http.HttpHost;
@@ -120,8 +121,7 @@ public class RunMojo
     private HttpClientContext httpContext;
     private HttpHost httpHost;
 
-    public void execute()
-            throws MojoExecutionException, MojoFailureException {
+    public void execute() throws MojoExecutionException, MojoFailureException {
         try {
             if( mavenSession.getSystemProperties().getProperty("skipApiTests") != null ){
                 return;
@@ -136,6 +136,10 @@ public class RunMojo
 
             readRecipeProperties();
             initHttpClient();
+
+            if( properties == null ){
+                properties = Maps.newConcurrentMap();
+            }
 
             JUnitReport report = async ? null : new JUnitReport();
 
