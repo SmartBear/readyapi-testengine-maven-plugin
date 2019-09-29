@@ -1,6 +1,6 @@
 # ReadyAPI TestEngine Maven Plugin
 
-A maven plugin that runs a set of SoapUI/ReadyAPI projects with ReadyAPI TestEngine - 
+A maven plugin that runs a set of SoapUI/ReadyAPI projects with [ReadyAPI TestEngine](https://smartbear.com/product/ready-api/testengine/overview/) - 
 configure it to run in whatever build phase you might find relevant, for example;
 
 ```
@@ -40,11 +40,11 @@ Configuration parameters are:
 * username (required) : the TestEngine username to use for authentication
 * password (required) : the TestEngine password to use for authentication
 * server (required) : endpoint of the TestEngine (no trailing slash!)
-* recipeDirectory : the folder to scan recursively for recipes/projects, defaults to ${project.basedir}/src/test/resources/recipes
+* projectsDirectpry : the folder to scan recursively for projects and recipes, defaults to ${project.basedir}/src/test/resources/test-projects
 * targetDirectory : the folder to which filtered recipes will be copied before executing, defaults
 to ${project.basedir}/target/test-recipes
 * properties : an optional set of additional properties that will be used during filtering (see below)
-* disableFiltering : disables filtering of recipes - if set to true the recipes will not be copied and filtere
+* disableFiltering : disables filtering of recipes - if set to true the recipes will not be copied and filtered
 to the target directory, instead they will run directly from the source directory.
 * reportTarget : the folder to which a junit-report.xml file will be generated (as can be processed by 
 the surefire plugin), defaults to ${basedir}/target/surefire-reports
@@ -54,10 +54,11 @@ to target
  to be able to create test-reports. Setting this to true will disable reporting functionality, but allow you 
 to specify an optional callback that will be called by the TestEngine with test results when they are finished.
 * callback : an optional url to call with finished test results if async is set to true 
+* hostAndPort: an optional string in the format host:port which will replace the host and port in all HTTP requests sent by the test.
 
 Specifying a skipApiTests system property will bypass this plugin altogether.
 
-The plugin will also look for standard properties file named recipe.properties in the recipeDirectory folder and
+The plugin will also look for standard properties file named testengine.properties in the projectsDirectory folder and
 load any properties in this file before applying the properties specified in the configuration.
 
 ## Filtering

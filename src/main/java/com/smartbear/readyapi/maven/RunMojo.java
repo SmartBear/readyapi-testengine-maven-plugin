@@ -105,13 +105,13 @@ public class RunMojo
     @Parameter(required = true, property = "readyapi-testengine.endpoint")
     private String server;
 
-    @Parameter
+    @Parameter( property = "readyapi-testengine.hostAndPort")
     private String hostAndPort;
 
     @Parameter(defaultValue = "${project.basedir}/src/test/resources/test-projects", required = true)
     private File projectsDirectory;
 
-    @Parameter(defaultValue = "${project.basedir}/target/test-projects", required = true)
+    @Parameter(defaultValue = "${project.basedir}/target/test-recipes", required = true)
     private File targetDirectory;
 
     @Parameter(defaultValue = "${basedir}/target/surefire-reports")
