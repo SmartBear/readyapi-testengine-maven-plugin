@@ -39,12 +39,12 @@
     </licenses>
 
     <properties>
-        <portal.app.conf>config</portal.app.conf>
-        <portal.api.swagger.file>testengine-api.yml</portal.api.swagger.file>
-        <portal.api.name>readyapi-testengine</portal.api.name>
-        <portal-api.apis.owner>smartbear</portal-api.apis.owner>
-        <portal.api.version>1.0.1</portal.api.version>
-        <portal.api.folder>testengine</portal.api.folder>
+        <testengine.app.conf>config</testengine.app.conf>
+        <testengine.api.swagger.file>testengine-api.yml</testengine.api.swagger.file>
+        <testengine.api.name>readyapi-testengine</testengine.api.name>
+        <testengine-api.apis.owner>smartbear</testengine-api.apis.owner>
+        <testengine.api.version>1.0.1</testengine.api.version>
+        <testengine.api.folder>testengine</testengine.api.folder>
 
         <swaggerhub.apis.host>https://api.swaggerhub.com/apis</swaggerhub.apis.host>
 
@@ -147,10 +147,12 @@
             <version>2.0.0.Final</version>
         </dependency>
 
+        <!-- required by codegen generated classes -->
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-web</artifactId>
             <version>4.1.6.RELEASE</version>
+            <scope>compile</scope>
         </dependency>
     </dependencies>
 
@@ -205,38 +207,37 @@
                 <executions>
 
                     <execution>
-                        <id>portal-api-spec-generator</id>
+                        <id>testengine-api-spec-generator</id>
                         <goals>
                             <goal>generate</goal>
                         </goals>
                         <configuration>
-                            <inputSpec>${swaggerhub.apis.host}/${portal-api.apis.owner}/${portal.api.name}/${portal.api.version}</inputSpec>
+                            <inputSpec>${swaggerhub.apis.host}/${testengine-api.apis.owner}/${testengine.api.name}/${testengine.api.version}</inputSpec>
                             <language>openapi-yaml</language>
-                            <output>${codegen.directory}/${portal.api.folder}</output>
+                            <output>${codegen.directory}/${testengine.api.folder}</output>
                             <configOptions>
-                                <outputFile>${portal.api.swagger.file}</outputFile>
+                                <outputFile>${testengine.api.swagger.file}</outputFile>
                             </configOptions>
                         </configuration>
                     </execution>
 
                     <execution>
-                        <id>generate-portal-api</id>
+                        <id>generate-testengine-api</id>
                         <goals>
                             <goal>generate</goal>
                         </goals>
                         <configuration>
-                            <inputSpec>${codegen.directory}/${portal.api.folder}/${portal.api.swagger.file}</inputSpec>
+                            <inputSpec>${codegen.directory}/${testengine.api.folder}/${testengine.api.swagger.file}</inputSpec>
                             <generateSupportingFiles>false</generateSupportingFiles>
                             <generateApiTests>false</generateApiTests>
                             <language>spring</language>
 
                             <configOptions>
                                 <output>${project.build.directory}/generated-sources</output>
-                                <modelPackage>${project.groupId}.portal.model</modelPackage>
-                                <apiPackage>${project.groupId}.portal.api</apiPackage>
+                                <modelPackage>${project.groupId}.testengine.model</modelPackage>
+                                <apiPackage>${project.groupId}.testengine.api</apiPackage>
                                 <java8>true</java8>
                                 <interfaceOnly>true</interfaceOnly>
-
                             </configOptions>
 
                         </configuration>

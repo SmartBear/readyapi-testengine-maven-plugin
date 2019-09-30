@@ -40,7 +40,7 @@ Configuration parameters are:
 * username (required) : the TestEngine username to use for authentication
 * password (required) : the TestEngine password to use for authentication
 * server (required) : endpoint of the TestEngine (no trailing slash!)
-* projectsDirectpry : the folder to scan recursively for projects and recipes, defaults to ${project.basedir}/src/test/resources/test-projects
+* projectsDirectory : the folder to scan recursively for projects and recipes, defaults to ${project.basedir}/src/test/resources/test-projects
 * targetDirectory : the folder to which filtered recipes will be copied before executing, defaults
 to ${project.basedir}/target/test-recipes
 * properties : an optional set of additional properties that will be used during filtering (see below)
