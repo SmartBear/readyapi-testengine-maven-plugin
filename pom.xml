@@ -38,6 +38,23 @@
         </license>
     </licenses>
 
+    <properties>
+        <testengine.app.conf>config</testengine.app.conf>
+        <testengine.api.swagger.file>testengine-api.yml</testengine.api.swagger.file>
+        <testengine.api.name>readyapi-testengine</testengine.api.name>
+        <testengine-api.apis.owner>smartbear</testengine-api.apis.owner>
+        <testengine.api.version>1.0.1</testengine.api.version>
+        <testengine.api.folder>testengine</testengine.api.folder>
+
+        <swaggerhub.apis.host>https://api.swaggerhub.com/apis</swaggerhub.apis.host>
+
+        <codegen.directory>target/generated-sources/main/spec</codegen.directory>
+        <codegen.version>3.0.8</codegen.version>
+
+        <swagger-annotations-version>1.5.22</swagger-annotations-version>
+
+    </properties>
+
     <dependencies>
         <dependency>
             <groupId>org.apache.maven</groupId>
@@ -60,11 +77,6 @@
             <groupId>org.apache.httpcomponents</groupId>
             <artifactId>httpcore</artifactId>
             <version>4.4.4</version>
-        </dependency>
-        <dependency>
-            <groupId>com.smartbear.readyapi</groupId>
-            <artifactId>ready-api-testserver-client</artifactId>
-            <version>1.0.0</version>
         </dependency>
         <dependency>
             <groupId>org.apache.httpcomponents</groupId>
@@ -98,6 +110,50 @@
             <version>2.4.0</version>
         </dependency>
 
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <version>1.7.28</version>
+        </dependency>
+
+        <dependency>
+            <groupId>javax.servlet</groupId>
+            <artifactId>servlet-api</artifactId>
+            <version>2.5</version>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>io.swagger</groupId>
+            <artifactId>swagger-annotations</artifactId>
+            <version>${swagger-annotations-version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-annotations</artifactId>
+            <version>2.9.10</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+            <version>2.9.10</version>
+        </dependency>
+
+        <dependency>
+            <groupId>javax.validation</groupId>
+            <artifactId>validation-api</artifactId>
+            <version>2.0.0.Final</version>
+        </dependency>
+
+        <!-- required by codegen generated classes -->
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-web</artifactId>
+            <version>4.1.6.RELEASE</version>
+            <scope>compile</scope>
+        </dependency>
     </dependencies>
 
     <build>
@@ -107,7 +163,8 @@
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>3.8.1</version>
                 <configuration>
-                    <target>6</target>
+                    <source>8</source>
+                    <target>8</target>
                 </configuration>
             </plugin>
 
@@ -137,11 +194,60 @@
                 </executions>
                 <inherited>true</inherited>
                 <configuration>
-                    <javaSource>6</javaSource>
+                    <javaSource>8</javaSource>
                     <verbose>false</verbose>
                     <schemaDirectory>src/main/resources</schemaDirectory>
                 </configuration>
             </plugin>
+
+            <plugin>
+                <groupId>io.swagger.codegen.v3</groupId>
+                <artifactId>swagger-codegen-maven-plugin</artifactId>
+                <version>${codegen.version}</version>
+                <executions>
+
+                    <execution>
+                        <id>testengine-api-spec-generator</id>
+                        <goals>
+                            <goal>generate</goal>
+                        </goals>
+                        <configuration>
+                            <inputSpec>${swaggerhub.apis.host}/${testengine-api.apis.owner}/${testengine.api.name}/${testengine.api.version}</inputSpec>
+                            <language>openapi-yaml</language>
+                            <output>${codegen.directory}/${testengine.api.folder}</output>
+                            <configOptions>
+                                <outputFile>${testengine.api.swagger.file}</outputFile>
+                            </configOptions>
+                        </configuration>
+                    </execution>
+
+                    <execution>
+                        <id>generate-testengine-api</id>
+                        <goals>
+                            <goal>generate</goal>
+                        </goals>
+                        <configuration>
+                            <inputSpec>${codegen.directory}/${testengine.api.folder}/${testengine.api.swagger.file}</inputSpec>
+                            <generateSupportingFiles>false</generateSupportingFiles>
+                            <generateApiTests>false</generateApiTests>
+                            <language>spring</language>
+
+                            <configOptions>
+                                <output>${project.build.directory}/generated-sources</output>
+                                <modelPackage>${project.groupId}.testengine.model</modelPackage>
+                                <apiPackage>${project.groupId}.testengine.api</apiPackage>
+                                <java8>true</java8>
+                                <interfaceOnly>true</interfaceOnly>
+                            </configOptions>
+
+                        </configuration>
+                    </execution>
+
+                </executions>
+            </plugin>
+
+
+
         </plugins>
     </build>
 

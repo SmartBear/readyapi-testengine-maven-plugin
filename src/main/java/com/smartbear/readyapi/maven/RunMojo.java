@@ -16,13 +16,14 @@ package com.smartbear.readyapi.maven;
  * limitations under the License.
  */
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import com.google.common.io.CharStreams;
-import com.smartbear.readyapi.client.model.ProjectResultReport;
-import com.smartbear.readyapi.client.model.TestCaseResultReport;
-import com.smartbear.readyapi.client.model.TestStepResultReport;
-import com.smartbear.readyapi.client.model.TestSuiteResultReport;
-import io.swagger.util.Json;
+import com.smartbear.readyapi.testengine.model.TestCaseResultReport;
+import com.smartbear.readyapi.testengine.model.TestJobReport;
+import com.smartbear.readyapi.testengine.model.TestStepResultReport;
+import com.smartbear.readyapi.testengine.model.TestSuiteResultReport;
 import org.apache.http.HttpHost;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
@@ -107,11 +108,11 @@ public class RunMojo
     @Parameter(required = true, property = "readyapi-testengine.endpoint")
     private String server;
 
-    @Parameter
+    @Parameter( property = "readyapi-testengine.hostAndPort")
     private String hostAndPort;
 
-    @Parameter(defaultValue = "${project.basedir}/src/test/resources/recipes", required = true)
-    private File recipeDirectory;
+    @Parameter(defaultValue = "${project.basedir}/src/test/resources/test-projects", required = true)
+    private File projectsDirectory;
 
     @Parameter(defaultValue = "${project.basedir}/target/test-recipes", required = true)
     private File targetDirectory;
@@ -123,8 +124,7 @@ public class RunMojo
     private HttpClientContext httpContext;
     private HttpHost httpHost;
 
-    public void execute()
-            throws MojoExecutionException, MojoFailureException {
+    public void execute() throws MojoExecutionException, MojoFailureException {
         try {
             if( mavenSession.getSystemProperties().getProperty("skipApiTests") != null ){
                 return;
@@ -137,8 +137,12 @@ public class RunMojo
                 return;
             }
 
-            readRecipeProperties();
+            readProperties();
             initHttpClient();
+
+            if( properties == null ){
+                properties = Maps.newConcurrentMap();
+            }
 
             JUnitReport report = async ? null : new JUnitReport();
 
@@ -150,7 +154,7 @@ public class RunMojo
                 String fileName = file.toLowerCase();
                 CloseableHttpResponse response;
 
-                File f = new File(recipeDirectory,file);
+                File f = new File(projectsDirectory,file);
 
                 if (fileName.endsWith(".json")) {
                     recipeCount++;
@@ -186,7 +190,7 @@ public class RunMojo
                     reportTarget.mkdirs();
                 }
 
-                report.save(new File(reportTarget, "recipe-report.xml"));
+                report.save(new File(reportTarget, "testengine-report.xml"));
 
                 if (failCount > 0 && failOnFailures) {
                     throw new MojoFailureException(failCount + " failures during test execution");
@@ -197,16 +201,16 @@ public class RunMojo
             throw e;
         }
         catch (Exception e) {
-            throw new MojoExecutionException("Error running recipe", e);
+            throw new MojoExecutionException("Error running tests", e);
         }
     }
 
-    private void readRecipeProperties() throws IOException {
-        File recipeProperties = new File(recipeDirectory, "recipe.properties");
-        if( recipeProperties.exists()){
+    private void readProperties() throws IOException {
+        File testengineProperties = new File(projectsDirectory, "testengine.properties");
+        if( testengineProperties.exists()){
             Properties props = new Properties();
-            props.load( new FileInputStream( recipeProperties ));
-            getLog().debug( "Read " + props.size() + " properties from recipe.properties");
+            props.load( new FileInputStream( testengineProperties ));
+            getLog().debug( "Read " + props.size() + " properties from testengine.properties");
 
             // override with properties in config section
             if( properties != null ){
@@ -222,7 +226,7 @@ public class RunMojo
         FileSetManager fileSetManager = new FileSetManager();
 
         FileSet fileSet = new FileSet();
-        fileSet.setDirectory(recipeDirectory.getAbsolutePath());
+        fileSet.setDirectory(projectsDirectory.getAbsolutePath());
         fileSet.addInclude("**/*.json");
         fileSet.addInclude("**/*.xml");
 
@@ -239,28 +243,29 @@ public class RunMojo
         getLog().debug("Response body:" + responseBody);
 
         if( report != null ) {
-            ProjectResultReport result = Json.mapper().reader(ProjectResultReport.class).readValue(responseBody);
-            if (result.getStatus() == ProjectResultReport.StatusEnum.FAILED) {
+            ObjectMapper mapper = new ObjectMapper();
+            TestJobReport result = mapper.readerFor(TestJobReport.class).readValue(responseBody);
+            if (result.getStatus() == TestJobReport.StatusEnum.FAILED) {
 
                 String message = logErrorsToConsole(result);
-                report.addTestCaseWithFailure(name, result.getTimeTaken(),
+                report.addTestCaseWithFailure(name, result.getTotalTime(),
                     message, "<missing stacktrace>", new HashMap<String, String>(properties));
 
-                throw new MojoFailureException("Recipe Failed");
+                throw new MojoFailureException("Test Execution Failed");
             } else {
-                report.addTestCase(name, result.getTimeTaken(), new HashMap<String, String>(properties));
+                report.addTestCase(name, result.getTotalTime(), new HashMap<String, String>(properties));
             }
         }
     }
 
-    private String logErrorsToConsole(ProjectResultReport result) {
+    private String logErrorsToConsole(TestJobReport result) {
 
         List<String> messages = new ArrayList<String>();
 
         for( TestSuiteResultReport testSuiteResultReport : result.getTestSuiteResultReports()){
             for(TestCaseResultReport testCaseResultReport : testSuiteResultReport.getTestCaseResultReports()){
                 for(TestStepResultReport stepResultReport : testCaseResultReport.getTestStepResultReports()){
-                    if( stepResultReport.getAssertionStatus() == TestStepResultReport.AssertionStatusEnum.FAILED){
+                    if( stepResultReport.getAssertionStatus() == TestStepResultReport.AssertionStatusEnum.FAIL){
                         getLog().error("Failed " + testSuiteResultReport.getTestSuiteName() + " / " +
                                 testCaseResultReport.getTestCaseName() + " / " + stepResultReport.getTestStepName());
                         for( String message : stepResultReport.getMessages()){
@@ -320,9 +325,9 @@ public class RunMojo
         }
 
         Resource fileResource = new Resource();
-        fileResource.setDirectory(recipeDirectory.getAbsolutePath());
+        fileResource.setDirectory(projectsDirectory.getAbsolutePath());
 
-        String filename = file.getAbsolutePath().substring(recipeDirectory.getAbsolutePath().length());
+        String filename = file.getAbsolutePath().substring(projectsDirectory.getAbsolutePath().length());
 
         fileResource.addInclude(filename);
         fileResource.setFiltering(true);
