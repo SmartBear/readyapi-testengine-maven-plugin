@@ -58,10 +58,12 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -260,7 +262,7 @@ public class RunMojo
 
     private String logErrorsToConsole(TestJobReport result) {
 
-        List<String> messages = new ArrayList<String>();
+        List<String> messages = new ArrayList<>();
 
         for( TestSuiteResultReport testSuiteResultReport : result.getTestSuiteResultReports()){
             for(TestCaseResultReport testCaseResultReport : testSuiteResultReport.getTestCaseResultReports()){
@@ -280,7 +282,7 @@ public class RunMojo
         return Arrays.toString( messages.toArray());
     }
 
-    private CloseableHttpResponse runXmlProject(File file) throws IOException, MavenFilteringException {
+    private CloseableHttpResponse runXmlProject(File file) throws IOException {
         getLog().info("Executing project " + file.getName());
 
         HttpPost httpPost = new HttpPost(buildExecuteUri("/testjobs"));
@@ -289,18 +291,18 @@ public class RunMojo
         return httpClient.execute(httpHost, httpPost, httpContext);
     }
 
-    private String buildExecuteUri(String path) {
+    private String buildExecuteUri(String path) throws UnsupportedEncodingException {
         String uri = server + "/api/v1" + path + "?async=" + async;
         if( environment != null ){
-            uri += "&environment=" + URLEncoder.encode( environment );
+            uri += "&environment=" + URLEncoder.encode(environment, StandardCharsets.UTF_8.toString());
         }
 
         if (hostAndPort != null) {
-            uri += "&hostAndPort=" + URLEncoder.encode(hostAndPort);
+            uri += "&hostAndPort=" + URLEncoder.encode(hostAndPort, StandardCharsets.UTF_8.toString());
         }
 
-        if( callback != null ){
-            uri += "&callback=" + URLEncoder.encode( callback );
+        if (callback != null) {
+            uri += "&callback=" + URLEncoder.encode(callback, StandardCharsets.UTF_8.toString());
         }
         return uri;
     }
