@@ -362,7 +362,7 @@ public class RunMojo
     private void initHttpClient() throws MalformedURLException {
 
         URL url = new URL(server);
-        httpHost = new HttpHost(url.getHost(), url.getPort());
+        httpHost = new HttpHost(url.getHost(), url.getPort(), url.getProtocol());
 
         CredentialsProvider credsProvider = new BasicCredentialsProvider();
         credsProvider.setCredentials(new AuthScope(httpHost),
