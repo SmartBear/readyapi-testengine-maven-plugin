@@ -49,9 +49,9 @@
         <swaggerhub.apis.host>https://api.swaggerhub.com/apis</swaggerhub.apis.host>
 
         <codegen.directory>target/generated-sources/main/spec</codegen.directory>
-        <codegen.version>3.0.8</codegen.version>
+        <codegen.version>3.0.11</codegen.version>
 
-        <swagger-annotations-version>1.5.22</swagger-annotations-version>
+        <swagger-annotations-version>1.5.23</swagger-annotations-version>
 
     </properties>
 
@@ -59,39 +59,33 @@
         <dependency>
             <groupId>org.apache.maven</groupId>
             <artifactId>maven-plugin-api</artifactId>
-            <version>2.0</version>
+            <version>3.6.2</version>
         </dependency>
         <dependency>
             <groupId>org.apache.maven.plugin-tools</groupId>
             <artifactId>maven-plugin-annotations</artifactId>
-            <version>3.4</version>
+            <version>3.6.0</version>
             <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <version>3.8.1</version>
-            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.apache.httpcomponents</groupId>
             <artifactId>httpcore</artifactId>
-            <version>4.4.4</version>
+            <version>4.4.12</version>
         </dependency>
         <dependency>
             <groupId>org.apache.httpcomponents</groupId>
             <artifactId>httpclient</artifactId>
-            <version>4.5.1</version>
+            <version>4.5.10</version>
         </dependency>
         <dependency>
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
-            <version>18.0</version>
+            <version>28.1-jre</version>
         </dependency>
         <dependency>
             <groupId>org.apache.maven.shared</groupId>
             <artifactId>maven-filtering</artifactId>
-            <version>3.0.0</version>
+            <version>3.1.1</version>
         </dependency>
         <dependency>
             <groupId>org.apache.maven.shared</groupId>
@@ -104,12 +98,6 @@
             <artifactId>xmlbeans</artifactId>
             <version>2.4.0</version>
         </dependency>
-        <dependency>
-            <groupId>org.apache.xmlbeans</groupId>
-            <artifactId>xmlbeans-xmlpublic</artifactId>
-            <version>2.4.0</version>
-        </dependency>
-
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
@@ -144,14 +132,14 @@
         <dependency>
             <groupId>javax.validation</groupId>
             <artifactId>validation-api</artifactId>
-            <version>2.0.0.Final</version>
+            <version>2.0.1.Final</version>
         </dependency>
 
         <!-- required by codegen generated classes -->
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-web</artifactId>
-            <version>4.1.6.RELEASE</version>
+            <version>4.1.9.RELEASE</version>
             <scope>compile</scope>
         </dependency>
     </dependencies>
@@ -259,7 +247,7 @@
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-jar-plugin</artifactId>
-                        <version>2.4</version>
+                        <version>3.1.2</version>
                         <configuration>
                             <archive>
                                 <manifestEntries>
@@ -275,7 +263,7 @@
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-source-plugin</artifactId>
-                        <version>2.1.2</version>
+                        <version>3.1.0</version>
                         <executions>
                             <execution>
                                 <id>attach-sources</id>
@@ -289,7 +277,7 @@
                     <plugin>
                         <groupId>org.sonatype.plugins</groupId>
                         <artifactId>nexus-staging-maven-plugin</artifactId>
-                        <version>1.6.3</version>
+                        <version>1.6.8</version>
                         <extensions>true</extensions>
                         <configuration>
                             <serverId>ossrh</serverId>
@@ -300,7 +288,7 @@
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-gpg-plugin</artifactId>
-                        <version>1.5</version>
+                        <version>1.6</version>
                         <executions>
                             <execution>
                                 <id>sign-artifacts</id>
