@@ -43,7 +43,7 @@
         <testengine.api.swagger.file>testengine-api.yml</testengine.api.swagger.file>
         <testengine.api.name>readyapi-testengine</testengine.api.name>
         <testengine-api.apis.owner>smartbear</testengine-api.apis.owner>
-        <testengine.api.version>1.0.1</testengine.api.version>
+        <testengine.api.version>1.2.0</testengine.api.version>
         <testengine.api.folder>testengine</testengine.api.folder>
 
         <swaggerhub.apis.host>https://api.swaggerhub.com/apis</swaggerhub.apis.host>

@@ -16,6 +16,7 @@ package com.smartbear.readyapi.maven;
  * limitations under the License.
  */
 
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -245,7 +246,8 @@ public class RunMojo
         getLog().debug("Response body:" + responseBody);
 
         if( report != null ) {
-            ObjectMapper mapper = new ObjectMapper();
+            ObjectMapper mapper = new ObjectMapper()
+                    .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
             TestJobReport result = mapper.readerFor(TestJobReport.class).readValue(responseBody);
             if (result.getStatus() == TestJobReport.StatusEnum.FAILED) {
 
