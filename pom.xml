@@ -20,8 +20,8 @@
 
     <scm>
         <url>https://github.com/SmartBear/readyapi-testengine-maven-plugin</url>
-        <connection>scm:git:ssh://git@github.com/readyapi/readyapi-testengine-maven-plugin.git</connection>
-        <developerConnection>scm:git:ssh://git@github.com/readyapi/readyapi-testengine-maven-plugin.git
+        <connection>scm:git:ssh://git@github.com/SmartBear/readyapi-testengine-maven-plugin.git</connection>
+        <developerConnection>scm:git:ssh://git@github.com/SmartBear/readyapi-testengine-maven-plugin.git
         </developerConnection>
     </scm>
 
