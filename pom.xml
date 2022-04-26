@@ -9,7 +9,7 @@
     <name>ReadyAPI TestEngine Maven Plugin</name>
 
     <description>Maven plugin for executing test projects with ReadyAPI TestEngine</description>
-    <url>https://github.com/readyapi/readyapi-testengine-maven-plugin</url>
+    <url>https://github.com/SmartBear/readyapi-testengine-maven-plugin</url>
 
     <developers>
         <developer>
@@ -19,7 +19,7 @@
     </developers>
 
     <scm>
-        <url>https://github.com/readyapi/readyapi-testengine-maven-plugin</url>
+        <url>https://github.com/SmartBear/readyapi-testengine-maven-plugin</url>
         <connection>scm:git:ssh://git@github.com/readyapi/readyapi-testengine-maven-plugin.git</connection>
         <developerConnection>scm:git:ssh://git@github.com/readyapi/readyapi-testengine-maven-plugin.git
         </developerConnection>
@@ -27,7 +27,7 @@
 
     <issueManagement>
         <system>github</system>
-        <url>https://github.com/readyapi/readyapi-testengine-maven-plugin/issues</url>
+        <url>https://github.com/SmartBear/readyapi-testengine-maven-plugin/issues</url>
     </issueManagement>
 
     <licenses>
