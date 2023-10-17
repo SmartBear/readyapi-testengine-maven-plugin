@@ -53,7 +53,7 @@
 
         <swagger-annotations-version>1.5.23</swagger-annotations-version>
 
-        <spring.version>5.3.21</spring.version>
+        <spring.version>6.0.13</spring.version>
     </properties>
 
     <dependencies>
