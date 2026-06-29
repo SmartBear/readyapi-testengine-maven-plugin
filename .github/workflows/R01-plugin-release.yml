@@ -61,7 +61,11 @@ jobs:
       - name: Commit release version
         run: |
           git add pom.xml
-          git commit -m "Release ${{ github.event.inputs.version }}"
+          if git diff --cached --quiet; then
+             echo "No version changes to commit"
+           else
+             git commit -m "Release ${{ github.event.inputs.version }}"
+           fi
 
       - name: Deploy to Maven Central
         run: mvn -B -P release clean deploy
