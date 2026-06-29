@@ -110,7 +110,7 @@ Simply pull this repo and run
 mvn clean install
 ```
 
-to install the latest version of the plugin locally. It will eventually be made available on maven central also.
+to install the latest version of the plugin locally.
 
 
 ## Next steps?
