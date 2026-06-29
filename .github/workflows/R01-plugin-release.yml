@@ -80,4 +80,38 @@ jobs:
           git push origin release/${{ github.event.inputs.version }}
           git push origin v${{ github.event.inputs.version }}
 
-      
+      - name: Calculate next snapshot version
+        id: next_version
+        run: |
+          VERSION=${{ github.event.inputs.version }}
+
+          MAJOR=$(echo $VERSION | cut -d. -f1)
+          MINOR=$(echo $VERSION | cut -d. -f2)
+          PATCH=$(echo $VERSION | cut -d. -f3)
+
+          NEXT_PATCH=$((PATCH + 1))
+
+          echo "version=${MAJOR}.${MINOR}.${NEXT_PATCH}-SNAPSHOT" >> $GITHUB_OUTPUT
+
+      - name: Checkout master
+        run: |
+          git checkout master
+          git pull origin master
+
+      - name: Set next snapshot version
+        run: |
+          mvn -B versions:set \
+            -DnewVersion=${{ steps.next_version.outputs.version }} \
+            -DgenerateBackupPoms=false
+
+      - name: Commit and push next snapshot version
+        run: |
+          git add pom.xml
+
+          if git diff --cached --quiet; then
+            echo "No snapshot changes to commit"
+          else
+            git commit -m "Prepare for next development iteration ${{ steps.next_version.outputs.version }}"
+            git push origin master
+          fi
+          
