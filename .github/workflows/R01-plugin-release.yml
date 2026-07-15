@@ -45,6 +45,39 @@ jobs:
           MAVEN_CENTRAL_USERNAME: ${{ secrets.MAVEN_CENTRAL_USERNAME }}
           MAVEN_CENTRAL_PASSWORD: ${{ secrets.MAVEN_CENTRAL_PASSWORD }}
 
+      - name: Verify Maven Central credentials
+        run: |
+          if [ -z "$MAVEN_CENTRAL_USERNAME" ]; then
+            echo "::error::MAVEN_CENTRAL_USERNAME secret is empty or not set"
+            exit 1
+          fi
+          if [ -z "$MAVEN_CENTRAL_PASSWORD" ]; then
+            echo "::error::MAVEN_CENTRAL_PASSWORD secret is empty or not set"
+            exit 1
+          fi
+          echo "Username length: ${#MAVEN_CENTRAL_USERNAME}"
+          echo "Password length: ${#MAVEN_CENTRAL_PASSWORD}"
+
+          # Any authenticated endpoint returns 401 only when the token itself is
+          # rejected. Any other status means the credentials were accepted and the
+          # problem lies elsewhere (workflow wiring, namespace rights, artifacts, etc.).
+          TOKEN=$(printf '%s:%s' "$MAVEN_CENTRAL_USERNAME" "$MAVEN_CENTRAL_PASSWORD" | base64 -w0)
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
+            -H "Authorization: Bearer $TOKEN" \
+            "https://central.sonatype.com/api/v1/publisher/deployments")
+
+          echo "Central Portal auth check HTTP status: $STATUS"
+          if [ "$STATUS" = "401" ]; then
+            echo "::error::Central Portal rejected the credentials (401). The secrets are wrong. \
+          Ensure they hold a generated User Token (central.sonatype.com -> Account -> Generate User Token), not your login email/password."
+            exit 1
+          fi
+          echo "Credentials were accepted by Central Portal (status $STATUS). \
+          If the deploy still 401s, the issue is in how Maven reads settings.xml, not the credential values themselves."
+        env:
+          MAVEN_CENTRAL_USERNAME: ${{ secrets.MAVEN_CENTRAL_USERNAME }}
+          MAVEN_CENTRAL_PASSWORD: ${{ secrets.MAVEN_CENTRAL_PASSWORD }}
+
       - name: Import GPG key
         uses: crazy-max/ghaction-import-gpg@v6
         with:
