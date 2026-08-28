@@ -54,7 +54,7 @@
         <codegen.directory>target/generated-sources/main/spec</codegen.directory>
         <codegen.version>3.0.75</codegen.version>
 
-        <swagger-annotations-version>2.2.20</swagger-annotations-version>
+        <swagger-annotations-version>2.2.40</swagger-annotations-version>
 
         <spring.version>6.2.12</spring.version>
         <maven.compiler.source>17</maven.compiler.source>
